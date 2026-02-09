@@ -1,11 +1,5 @@
 import { useState, useOptimistic, useActionState } from 'react';
-
-async function addCommentAction(formData) {
-  const commentText = formData.get('comment');
-  await new Promise((r) => setTimeout(r, 1000));
-  if (Math.random() < 0.3) throw new Error('Failed to send comment');
-  return { id: Date.now(), text: commentText };
-}
+import { addCommentAction } from '../utils';
 
 export const CommentsSection = () => {
   const [comments, setComments] = useState([
@@ -23,18 +17,19 @@ export const CommentsSection = () => {
     ],
   );
 
-  const [_, handleSubmit] = useActionState(async (prevState, formData) => {
+  const [_, handleSubmit] = useActionState(async (_, formData) => {
     const comment = formData.get('comment');
+
     setError(null);
     addOptimisticComment(comment);
 
     try {
       const savedComment = await addCommentAction(formData);
       setComments((prev) => [...prev, savedComment]);
-      setInput(''); // очищаем поле ввода
+      setInput('');
     } catch (err) {
       setError(err.message);
-      setComments((prev) => [...prev]); // триггер ререндер для отката
+      setComments((prev) => [...prev]);
     }
 
     return null;
